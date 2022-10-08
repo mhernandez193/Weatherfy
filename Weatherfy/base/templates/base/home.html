@@ -2,4 +2,16 @@
 
 {% block content %}
 <h1>Profile</h1>
+
+{% if user.is_authenticated %}
+
+Welcome {{user.username}}
+
+{% else %}
+
+<h3>Your are not authenticated</h3>
+<a href="{% url "social:begin" "spotify" %}">Continue with Spotify</a>
+
+{% endif %}
+
 {% endblock content %}
