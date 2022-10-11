@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-
+import folium
+import geocoder
 from .apis.Spotify import Spotify
 
 
@@ -25,7 +26,21 @@ def playlists(request):
 
 
 def location(request):
-    return render(request, "base/location.html")
+    #geolocation
+	location = geocoder.ip('me')
+	coords = location.latlng
+	country = location.country
+	city = location.city
+	state = location.state
+	
+	#map object
+	m = folium.Map(width = 1500, height = 750, location=[19,-12], zoom_start=3)
+	folium.Marker(coords, tooltip='More Information', 
+	popup=(country + ", " + city + ", " + state)).add_to(m)
+	#html representation
+	m = m._repr_html_()
+	context={'m' : m,}
+	return render(request, 'base/location.html', context)
 
 
 def friends(request):
