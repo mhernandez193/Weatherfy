@@ -1,11 +1,19 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
-# Create your views here.
+from .apis.Spotify import Spotify
+
+
 
 
 def home(request):
-    return render(request, "base/home.html")
+    spotifyClient = Spotify()
+    playlist = spotifyClient.fetchPlaylistByKeyword('rainy')
+    data = {
+        "playlist": playlist[0].items[0].uri
+    }
+
+    return render(request, "base/home.html", data)
 
 
 def profile(request):
