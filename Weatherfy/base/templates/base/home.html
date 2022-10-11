@@ -1,20 +1,17 @@
 {% extends 'base/main.html' %}
 
 {% block content %}
-<h1>Profile</h1>
 
-{% if user.is_authenticated %}
+<title>Weatherfy | Home</title>
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:340px;margin-right:40px">
 
-Welcome {{user.username}}
-
-{% else %}
-
-<h3>Your are not authenticated</h3>
-<a href="{% url "social:begin" "spotify" %}">Continue with Spotify</a>
-
-{% endif %}
-
-{{ data.playlist }}
+  <!-- Header -->
+  <div class="w3-container" style="margin-top:80px" id="showcase">
+    <h1 class="w3-jumbo"><b>Your Daily Playlist</b></h1>
+    <h1 class="w3-xxxlarge w3-text-red"><b>Current Weather: placeholder</b></h1>
+    <hr style="width:50px;border:5px solid red" class="w3-round">
+  </div>
 
 
 {% endblock content %}
