@@ -1,0 +1,26 @@
+
+<div class="container"> 
+    <div class="col-md-4">
+      <h2>Friends</h2>
+      {% for friend in friends %}
+          <a href="{% url '' %}">
+              <h3>{{ friend.username }}</h3>
+          </a>
+          <a href="{% url '' %}">
+          <button type="button" class="btn btn-default">Remove Friend</button>
+          </a>
+      {% endfor %}
+        <h2>Other People</h2>
+        {% for user in users %}
+        <a href="{% url '' %}">
+                <h3>{{ user.username }}</h3>
+            </a>
+            {% if not user in friends %}
+            <a href="{% url '' %}">
+            <button type="button" class="btn btn-success">Add Friend</button>
+            </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
