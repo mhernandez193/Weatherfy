@@ -9,7 +9,11 @@
 
   <!-- Header -->
   {% if user == None %}
-  <p>You must <a href="/login">login</a> </p>
+    <p>You must <a href="/login">login</a> </p>
+
+    {% if error != None %}
+    <p>Error: {{ error }}</p>
+    {% endif %}
   {% else %}
   <div class="w3-container" style="margin-top:80px" id="showcase">
     <h1 class="w3-jumbo"><b>Your Daily Playlist</b></h1>

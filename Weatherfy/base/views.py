@@ -42,7 +42,7 @@ def callback(request):
 def login(request):
     try:
         request.COOKIES['user_session']
-        return redirect('/', 307)
+        return redirect('/home', 307)
     except KeyError:
         scope = tk.scope.every
         auth = tk.UserAuth(cred, scope)
@@ -105,6 +105,7 @@ def home(request):
         formatted_time = current_time.strftime("%A, %B %d %Y, %H:%M:%S %p")
 
         data = {
+            "user": token,
             "city": str(city),
             "weather": {
                 'city': city,
@@ -116,15 +117,18 @@ def home(request):
                 'humidity': 'Humidity: ' + str(weather['main']['humidity']) + '%',
                 'time': formatted_time
             },
-            "playlist": playlist[0].items[playlistIndex]
+            "playlist": playlist[0].items[playlistIndex],
+            "error": None
         }
 
         return render(request, "base/home.html", data)
 
     # If user not signed in
-    except:
+    except Exception as e:
+        print(e)
         return render(request, "base/home.html", {
             "user": None,
+            "error": e
         })
 
 def profile(request):
@@ -139,9 +143,9 @@ def playlists(request):
         # Fetch Spotify playlist using weather
         with spotify.token_as(token):
             tracks = spotify.current_user_top_tracks()
-            print(tracks.items)
         
         data = {
+            "user": token,
             "tracks": tracks.items
         }
 
@@ -151,6 +155,7 @@ def playlists(request):
     except:
         return render(request, "base/playlists.html", {
             "user": None,
+            "tracks": None
         })
 
 def location(request):
