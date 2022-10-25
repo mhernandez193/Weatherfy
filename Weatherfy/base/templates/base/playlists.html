@@ -1,4 +1,7 @@
 {% extends 'base/main.html' %}
+{% block content %}
+{title>Weatherfy | Playlists</title>
+
 
 {% load static %}
 <link rel="stylesheet" href="{% static 'polls/playlists.css' %}">
@@ -16,22 +19,6 @@
 		// Do something
 	};
 </script>
-
-<nav class="navbar navbar-expand-lg" style="background-color: rgb(51, 51, 51); border: 2px solid black; border-radius: 15px; margin: auto; width: 75%;margin-top: 10px;">
-	<div class="container-fluid">
-		<div class="collapse navbar-collapse justify-content-center">
-			<ul class="navbar-nav mb-2 mb-lg-0">
-				<a class="nav-item" href="/" style="text-align: center;color: rgb(0, 201, 0);font-weight: 1000;font-size: x-large;padding-right: 20px;text-decoration: None;">Weatherfy</a>
-				<a class="nav-item nav-link" href="/home">Home</a>
-				<a class="nav-item nav-link" href="/profile">Profile</a>
-				<a class="nav-item nav-link active" href="/playlists">Playlists</a>
-				<a class="nav-item nav-link" href="/location">Location</a>
-				<a class="nav-item nav-link" href="/friends">Friends</a>
-				<a class="nav-item nav-link" href="/about">About</a>
-			</ul>
-		</div>
-	</div>
-</nav>
 
 <div class="jumbotron jumbotron-fluid">
 	<div class="container">
