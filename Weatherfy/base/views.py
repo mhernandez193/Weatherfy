@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
+import tekore as tk
 import ipinfo
 import environ
 from datetime import datetime
@@ -13,85 +14,171 @@ from .apis.Weather import fetchWeather
 env = environ.Env()
 environ.Env.read_env()
 
+conf = (env("SOCIAL_AUTH_SPOTIFY_KEY"), env(
+    "SOCIAL_AUTH_SPOTIFY_SECRET"), env("REDIRECT"))
+cred = tk.Credentials(*conf)
+spotify = tk.Spotify()
+
+auths = {}  # Ongoing authorisations: state -> UserAuth
+users = {}  # User tokens: state -> token (use state as a user ID)
+
+def callback(request):
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+    auth = auths.pop(state, None)
+
+    if auth is None:
+        return 'Invalid state!', 400
+
+    token = auth.request_token(code, state)
+    # # session['user'] = state
+    users[state] = token
+
+    response = redirect('/home')
+    response.set_cookie('user_session', token)
+
+    return response
+
+def login(request):
+    try:
+        request.COOKIES['user_session']
+        return redirect('/', 307)
+    except KeyError:
+        scope = tk.scope.every
+        auth = tk.UserAuth(cred, scope)
+        auths[auth.state] = auth
+        return redirect(auth.url, 307)
+
+
+def logout(request):
+    token = request.COOKIES['user_session']
+    if token is not None:
+        users.pop(token, None)
+
+    response = redirect('/home')
+    response.delete_cookie('user_session')
+    return response
+
 
 def home(request):
-    city = None
+    # If user signed in
+    try:
+        token = request.COOKIES['user_session']
 
-    # User searched weather for a different city
-    if request.method == 'POST':
-        city = request.POST['city']
+        city = None
 
-    # Current city
-    else:
-        # Grab IP address from request
-        if env("STAGE") == 'DEV':
-            ipAddress = '216.239.36.21'  # Mountain View, CA
+        # User searched weather for a different city
+        if request.method == 'POST':
+            city = request.POST['city']
+
+        # Current city
         else:
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                ipAddress = x_forwarded_for.split(',')[0]
+            # Grab IP address from request
+            if env("STAGE") == 'DEV':
+                ipAddress = '216.239.36.21' # Mountain View, CA
             else:
-                ipAddress = request.META.get('REMOTE_ADDR')
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                if x_forwarded_for:
+                    ipAddress = x_forwarded_for.split(',')[0]
+                else:
+                    ipAddress = request.META.get('REMOTE_ADDR')
 
-        # Fetch geolocation using IP
-        handler = ipinfo.getHandler(env("IP_INFO_ACCESS_TOKEN"))
-        details = handler.getDetails(ipAddress)
-        city = details.city
+            # Fetch geolocation using IP
+            handler = ipinfo.getHandler(env("IP_INFO_ACCESS_TOKEN"))
+            details = handler.getDetails(ipAddress)
+            city = details.city
 
-    # Fetch weather for city
-    weather = fetchWeather(city)
+        # Fetch weather for city
+        weather = fetchWeather(city)
 
-    # Fetch Spotify playlist using weather
-    spotifyClient = Spotify()
-    playlist = spotifyClient.fetchPlaylistByKeyword(
-        weather['weather'][0]['description'])
+        # Fetch Spotify playlist using weather
+        playlistIndex = 0
+        with spotify.token_as(token):
+            playlist = spotify.search(
+                weather['weather'][0]['description'], ('playlist',))
+            playlistIndex = randint(0, playlist[0].limit-1)
+            spotify.playback_start_context(
+                playlist[0].items[playlistIndex].uri)
 
-    # Create data payload
-    current_time = datetime.now()
-    formatted_time = current_time.strftime("%A, %B %d %Y, %H:%M:%S %p")
+        # Create data payload
+        current_time = datetime.now()
+        formatted_time = current_time.strftime("%A, %B %d %Y, %H:%M:%S %p")
 
-    data = {
-        "city": str(city),
-        "weather": {
-            'city': city,
-            'description': weather['weather'][0]['description'],
-            'icon': weather['weather'][0]['icon'],
-            'temperature': str(weather['main']['temp']) + ' °F',
-            'country_code': weather['sys']['country'],
-            'wind': 'Wind: ' + str(weather['wind']['speed']) + ' m/h',
-            'humidity': 'Humidity: ' + str(weather['main']['humidity']) + '%',
-            'time': formatted_time
-        },
-        "playlist": playlist[0].items[randint(0, playlist[0].total-1)]
-    }
+        data = {
+            "city": str(city),
+            "weather": {
+                'city': city,
+                'description': weather['weather'][0]['description'],
+                'icon': weather['weather'][0]['icon'],
+                'temperature': str(weather['main']['temp'])[:2] + ' °F',
+                'country_code': weather['sys']['country'],
+                'wind': 'Wind: ' + str(weather['wind']['speed']) + ' m/h',
+                'humidity': 'Humidity: ' + str(weather['main']['humidity']) + '%',
+                'time': formatted_time
+            },
+            "playlist": playlist[0].items[playlistIndex]
+        }
 
-    return render(request, "base/home.html", data)
+        return render(request, "base/home.html", data)
 
+    # If user not signed in
+    except:
+        return render(request, "base/home.html", {
+            "user": None,
+        })
 
 def profile(request):
     return render(request, "base/profile.html")
 
 
 def playlists(request):
-    return render(request, "base/playlists.html")
+    # If user signed in
+    try:
+        token = request.COOKIES['user_session']
 
+        # Fetch Spotify playlist using weather
+        with spotify.token_as(token):
+            tracks = spotify.current_user_top_tracks()
+            print(tracks.items)
+        
+        data = {
+            "tracks": tracks.items
+        }
+
+        return render(request, "base/playlists.html", data)
+
+    # If user not signed in
+    except:
+        return render(request, "base/playlists.html", {
+            "user": None,
+        })
 
 def location(request):
-    #geolocation
-	location = geocoder.ip('me')
-	coords = location.latlng
-	country = location.country
-	city = location.city
-	state = location.state
-	
-	#map object
-	m = folium.Map(width = 1500, height = 750, location=[19,-12], zoom_start=3)
-	folium.Marker(coords, tooltip='More Information', 
-	popup=(country + ", " + city + ", " + state)).add_to(m)
-	#html representation
-	m = m._repr_html_()
-	context={'m' : m,}
-	return render(request, 'base/location.html', context)
+    # geolocation
+    if env("STAGE") == 'DEV':
+        ipAddress = '216.239.36.21' # Mountain View, CA
+    else:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ipAddress = x_forwarded_for.split(',')[0]
+        else:
+            ipAddress = request.META.get('REMOTE_ADDR')
+    
+    location = geocoder.ip(ipAddress)
+    coords = location.latlng
+    country = location.country
+    city = location.city
+    state = location.state
+
+    # map object
+    m = folium.Map(width=1500, height=750, location=[19, -12], zoom_start=3)
+    folium.Marker(coords, tooltip='More Information',
+                  popup=(country + ", " + city + ", " + state)).add_to(m)
+    # html representation
+    m = m._repr_html_()
+    context = {'m': m, }
+    return render(request, 'base/location.html', context)
+
 
 def friends(request):
     data = {

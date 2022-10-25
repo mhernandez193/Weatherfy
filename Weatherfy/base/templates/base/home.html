@@ -8,6 +8,9 @@
 <div class="w3-main" style="margin-left:340px;margin-right:40px">
 
   <!-- Header -->
+  {% if user == None %}
+  <p>You must <a href="/login">login</a> </p>
+  {% else %}
   <div class="w3-container" style="margin-top:80px" id="showcase">
     <h1 class="w3-jumbo"><b>Your Daily Playlist</b></h1>
     <h1 class="w3-xxxlarge w3-text-red"><b>Current Weather: {{ weather.temperature }}</b></h1>
@@ -19,14 +22,15 @@
       <form action="/home" method="POST">
         {% csrf_token %}
         <div class="input-group">
-            <input type="text" required class="form-control" name="city" placeholder="Listen to weather from a different city">
-            <div class="input-group-append">
-                <button class="btn btn-success" type="submit">
-                    Search
-                </button>
-            </div>
+          <input type="text" required class="form-control" name="city"
+            placeholder="Listen to weather from a different city">
+          <div class="input-group-append">
+            <button class="btn btn-success" type="submit">
+              Search
+            </button>
+          </div>
         </div>
-    </form>
+      </form>
     </center>
   </div>
 
@@ -47,13 +51,15 @@
 
 
       {% for p in playlist.images %}
-        {% if forloop.counter == 1 %}
-        <img src="{{ p.url }}" height="240" width="240" />
-        {% endif %}
+      {% if forloop.counter == 1 %}
+      <img src="{{ p.url }}" height="240" width="240" />
+      {% endif %}
       {% endfor %}
     </div>
-  </div>
 
+    <p>You must <a href="/logout">logout</a> </p>
+  </div>
+  {% endif %}
 
 </div>
 
