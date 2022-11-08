@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-
+from django.contrib.auth import login, logout, authenticate
 import tekore as tk
 import ipinfo
 import environ
@@ -10,6 +10,8 @@ import folium
 import geocoder
 from .apis.Spotify import Spotify
 from .apis.Weather import fetchWeather
+from .forms import CreateUserForm
+from django.contrib.auth.forms import UserCreationForm
 
 env = environ.Env()
 environ.Env.read_env()
