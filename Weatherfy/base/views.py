@@ -210,7 +210,7 @@ def register(request):
 				user = form.cleaned_data.get('username')
 				messages.success(request, 'Account Created: ' + user)
 
-				return redirect('login')
+				return redirect('userLogin')
 			
 
 		context = {'form':form}
