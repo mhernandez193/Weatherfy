@@ -134,6 +134,76 @@ def home(request):
             "error": e
         })
 
+def togglePlayPause(request):
+    print('togglePlayPause')
+    try:
+        token = request.COOKIES['user_session']
+
+        with spotify.token_as(token):
+            if (spotify.playback_currently_playing().is_playing):
+                spotify.playback_pause()
+            else:
+                spotify.playback_resume()
+        
+        return HttpResponse(status=204)
+    except Exception as e:
+        print(e)
+        return render(request, "base/home.html", {
+            "user": None,
+            "error": e
+        })
+
+def skipForward(request):
+    print('skipForward')
+    try:
+        token = request.COOKIES['user_session']
+
+        with spotify.token_as(token):
+            spotify.playback_next()
+        
+        return HttpResponse(status=204)
+    except Exception as e:
+        print(e)
+        return render(request, "base/home.html", {
+            "user": None,
+            "error": e
+        })
+
+def skipBackward(request):
+    print('skipBackward')
+    try:
+        token = request.COOKIES['user_session']
+
+        with spotify.token_as(token):
+            spotify.playback_previous()
+        
+        return HttpResponse(status=204)
+    except Exception as e:
+        print(e)
+        return render(request, "base/home.html", {
+            "user": None,
+            "error": e
+        })
+
+def toggleFavorite(request):
+    print('toggleFavorite')
+    try:
+        token = request.COOKIES['user_session']
+        trackId = request.POST['trackId']
+        print(trackId)
+
+        with spotify.token_as(token):
+            # spotify.saved_tracks_add()
+            pass
+        
+        return HttpResponse(status=204)
+    except Exception as e:
+        print(e)
+        return render(request, "base/home.html", {
+            "user": None,
+            "error": e
+        })
+
 def profile(request):
     return render(request, "base/profile.html")
 

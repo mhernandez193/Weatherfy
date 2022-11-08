@@ -17,4 +17,9 @@ urlpatterns = [
     path("userLogin", views.userLogin, name="userLogin"),
     path("userLogout", views.userLogout, name="userLogout"),
     path("register", views.register, name="register"),
+
+    path('togglePlayPause/', views.togglePlayPause, name='togglePlayPause'),
+    path('skipForward/', views.skipForward, name='skipForward'),
+    path('skipBackward/', views.skipBackward, name='skipBackward'),
+    path('toggleFavorite/', views.toggleFavorite, name='toggleFavorite'),
 ]
