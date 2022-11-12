@@ -1,0 +1,125 @@
+{% extends 'base/main.html' %}
+
+{% block content %}
+
+<title>Weatherfy | Home</title>
+
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:340px;margin-right:40px">
+
+  <!-- Header -->
+  {% if user == None %}
+  <p>You must <a href="/login">login</a> </p>
+
+  {% if error != None %}
+  <p>Error: {{ error }}</p>
+  {% endif %}
+  {% else %}
+  <div class="w3-container" style="margin-top:80px" id="showcase">
+    <h1 class="w3-jumbo"><b>Your Daily Playlist</b></h1>
+    <h1 class="w3-xxxlarge w3-text-red"><b>Current Weather: {{ weather.temperature }}</b></h1>
+    <h3>Location: {{ weather.city }}, {{ weather.country_code }} ({{ weather.description|title }})</h3>
+    <img src="http://openweathermap.org/img/w/{{ weather.icon }}.png" alt="">
+    <hr style="width:50px;border:5px solid red" class="w3-round">
+
+    <center class="row">
+      <form action="/home" method="POST">
+        {% csrf_token %}
+        <div class="input-group">
+          <input type="text" required class="form-control" name="city"
+            placeholder="Listen to weather from a different city">
+          <div class="input-group-append">
+            <button class="btn btn-success" type="submit">
+              Search
+            </button>
+          </div>
+        </div>
+      </form>
+    </center>
+  </div>
+
+  <hr />
+
+  <div>
+    <h1>Curated Spotify Playlist</h1>
+
+    <div>
+      <h4>Title</h4>
+      <p>{{ playlist.name }}</p>
+
+      <h4>Description</h4>
+      <p>{{ playlist.description }}</p>
+
+      <h4>Tracks</h4>
+      <p>{{ playlist.tracks.total }}</p>
+
+
+      {% for p in playlist.images %}
+      <img src="{{ p.url }}" height="240" width="240" />
+      {% endfor %}
+
+
+
+
+      <p>You must <a href="/logout">logout</a> </p>
+
+      <!-- Skip Back -->
+      <form action='skipBackward' method='GET'>
+        <button type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+            class="bi bi-skip-backward-fill" viewBox="0 0 16 16">
+            <path
+              d="M.5 3.5A.5.5 0 0 0 0 4v8a.5.5 0 0 0 1 0V8.753l6.267 3.636c.54.313 1.233-.066 1.233-.697v-2.94l6.267 3.636c.54.314 1.233-.065 1.233-.696V4.308c0-.63-.693-1.01-1.233-.696L8.5 7.248v-2.94c0-.63-.692-1.01-1.233-.696L1 7.248V4a.5.5 0 0 0-.5-.5z" />
+          </svg>
+        </button>
+      </form>
+
+
+      <!-- Play/Pause Button -->
+      <form action='togglePlayPause' method='GET'>
+        <div id="wrapper">
+
+          <div class="playpause">
+
+            <button type="submit">
+              <input type="checkbox" value="None" id="playpause" name="check" />
+              <label for="playpause">
+
+
+              </label>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Skip Forward -->
+      <form action='skipForward' method='GET'>
+        <button type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+            class="bi bi-skip-forward-fill" viewBox="0 0 16 16">
+            <path
+              d="M15.5 3.5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V8.753l-6.267 3.636c-.54.313-1.233-.066-1.233-.697v-2.94l-6.267 3.636C.693 12.703 0 12.324 0 11.693V4.308c0-.63.693-1.01 1.233-.696L7.5 7.248v-2.94c0-.63.693-1.01 1.233-.696L15 7.248V4a.5.5 0 0 1 .5-.5z" />
+          </svg>
+        </button>
+      </form>
+
+      <!-- Favorite -->
+      <form action='toggleFavorite' method='POST'></form>
+      <!-- <input name="trackId" value="testing" /> -->
+      <button type="submit"></button>
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-star"
+        viewBox="0 0 16 16">
+        <path
+          d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
+      </svg>
+
+      <div class="footer">
+        <p>Footer</p>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+
+  {% endblock content %}

@@ -1,0 +1,95 @@
+{% extends 'base/main.html' %}
+{% block content %}
+<title>Weatherfy | Playlists</title>
+<h1>Playlists</h1>
+
+{% if user == None %}
+<p>You must <a href="/login">login</a> </p>
+{% else %}
+
+<script>
+	function onPlaylistSelect(playlist_id, auth)
+	{
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open( "GET", "https://api.spotify.com/v1/playlists/"+playlist_id+"/tracks", false ); // false for synchronous request
+		xmlHttp.setRequestHeader("Authorization", "Bearer " + auth)
+		xmlHttp.send( null );
+		var tracks = JSON.parse(xmlHttp.responseText).items;
+		var table = document.getElementById("shown_playlist");
+		console.log(table)
+		table.innerHTML = "";
+		for (var i = 0; i < tracks.length; ++i)
+		{
+			table.innerHTML += '<tr><th scope="row">'+(i+1)+'</th><th style="text-align: center;"><a href="'+tracks[i].track.href+'}">'+tracks[i].track.name+'</a></th></tr>';
+		}
+	}
+</script>
+
+<div class="jumbotron jumbotron-fluid">
+	<div class="container">
+		<h3 class="display-4" style="font-weight: 700;color: darkblue;text-align: center;font-size: xxx-large;margin-bottom: 20px;">My Playlist</h3>
+
+		<table style="margin: auto;width:50%;table-layout: fixed;width: 370px;background-color: rgb(76, 175, 80);border-radius: 20px;height: 50px;margin-bottom: 20px;margin-top: 20px;">
+			<tr>
+				<td style="text-align: center;" class="previoustrack">
+					<form action='skipBackward' method='GET'>
+						<button type="submit" style="border-radius: 30px;">
+							<i class="fa fa-arrow-left fa-2x"></i>
+						</button>
+					</form>
+				</td>
+				<td style="text-align: center;">
+					<form action='togglePlayPause' method='GET'>
+						<button type="submit" style="border-radius: 30px;width: 100px;">
+							<i class="fa fa-play fa-2x"></i>
+							<i class="fa fa-pause fa-2x"></i>
+						</button>
+					</form>
+				</td>
+				<td style="text-align: center;">
+					<form action='skipForward' method='GET'>
+						<button type="submit" style="border-radius: 30px;">
+							<i class="fa fa-arrow-right fa-2x"></i>
+						</button>
+					</form>
+				</td>
+				<td style="text-align: center;width: 50px;padding-right: 70px;">
+					<form action='toggleFavorite' method='POST'>
+						<button type="submit" style="border-radius: 30px;">
+							<i class="fa fa-star fa-2x"></i>
+						</button>
+					</form>
+				</td>
+			</tr>
+		</table>
+		<select class="selectpicker dropdown-menu-center" data-style="btn-danger" onchange="onPlaylistSelect(this.value, '{{request.COOKIES.user_session}}')" style="margin: auto;width:22%;text-align: center;display: block;">
+			<option value={{current_playlist_id}}>{{ current_playlist_name }}</option>
+			{% for id, name in playlists %}
+				<option value={{id}}>{{ name }}</option>
+			{% endfor %}
+		</select>
+
+		<table class="table table-striped" style="width: 70%;margin: auto;margin-top: 20px;">
+			<thead>
+				<tr>
+					<th scope="col">#</th>
+					<th scope="col" style="text-align: center;">Song</th>
+				</tr>
+			</thead>
+			<tbody id="shown_playlist">
+				{% for href, name in tracks %}
+				<tr>
+					<th scope="row">{{ forloop.counter }}</th>
+					<th style="text-align: center;">
+						<a href="{{href}}">{{ name }}</a>
+					</th>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<p>You must <a href="/logout">logout</a> </p>
+</div>
+
+{% endif %}
+{% endblock content %}
