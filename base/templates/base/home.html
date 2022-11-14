@@ -1,0 +1,71 @@
+{% extends 'base/main.html' %}
+
+{% block content %}
+
+<title>Weatherfy | Home</title>
+
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:340px;margin-right:40px">
+
+  <!-- Header -->
+  {% if user == None %}
+    <p>You must <a href="/login">connect your Spotify account</a> </p>
+
+    {% if error != None %}
+    <p>Error: {{ error }}</p>
+    {% endif %}
+  {% else %}
+  <div class="w3-container" style="margin-top:80px" id="showcase">
+    <h1 class="w3-jumbo"><b>Your Daily Playlist</b></h1>
+    <h1 class="w3-xxxlarge w3-text-red"><b>Current Weather: {{ weather.temperature }}</b></h1>
+    <h3>Location: {{ weather.city }}, {{ weather.country_code }} ({{ weather.description|title }})</h3>
+    <img src="http://openweathermap.org/img/w/{{ weather.icon }}.png" alt="">
+    <hr style="width:50px;border:5px solid red" class="w3-round">
+
+    <center class="row">
+      <form action="/home" method="POST">
+        {% csrf_token %}
+        <div class="input-group">
+          <input type="text" required class="form-control" name="city"
+            placeholder="Listen to weather from a different city">
+          <div class="input-group-append">
+            <button class="btn btn-success" type="submit">
+              Search
+            </button>
+          </div>
+        </div>
+      </form>
+    </center>
+  </div>
+
+  <hr />
+
+  <div>
+    <h1>Curated Spotify Playlist</h1>
+
+    <div>
+      <h4>Title</h4>
+      <p>{{ playlist.name }}</p>
+
+      <h4>Description</h4>
+      <p>{{ playlist.description }}</p>
+
+      <h4>Tracks</h4>
+      <p>{{ playlist.tracks.total }}</p>
+
+
+      {% for p in playlist.images %}
+      {% if forloop.counter == 1 %}
+      <img src="{{ p.url }}" height="240" width="240" />
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    <p><a href="/logout">Logout</a> </p>
+  </div>
+  {% endif %}
+
+</div>
+
+
+{% endblock content %}

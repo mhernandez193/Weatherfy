@@ -1,0 +1,43 @@
+{% extends 'base/main.html' %}
+{% block content %}
+<title>Weatherfy | Playlists</title>
+<h1>Playlists</h1>
+
+{% if user == None %}
+<p>You must <a href="/login">login</a> </p>
+{% else %}
+
+<div class="jumbotron jumbotron-fluid">
+	<div class="container">
+		<h3 class="display-4"
+			style="font-weight: 700;color: darkblue;text-align: center;font-size: xxx-large;margin-bottom: 20px;">My
+			Playlist</h3>
+		<select class="selectpicker dropdown-menu-center" data-style="btn-danger"
+			onchange="playlistChange(this.selectedIndex)">
+			<option selected>-- Please Select --</option>
+			<option value="1">Playlist 1</option>
+			
+		</select>
+		<table class="table table-striped" style="width: 70%;margin: auto;margin-top: 20px;">
+			<thead>
+				<tr>
+					<th scope="col">#</th>
+					<th scope="col" style="text-align: center;">Song</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for track in tracks %}
+				<tr>
+					<th scope="row">{{ forloop.counter }}</th>
+					<th style="text-align: center;">
+						<a href="enter link">{{ track.name }}</a>
+					</th>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+<p>You must <a href="/logout">logout</a> </p>
+{% endif %}
+{% endblock content %}
