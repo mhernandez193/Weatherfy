@@ -9,7 +9,7 @@
 
   <!-- Header -->
   {% if user == None %}
-    <p>You must <a href="/login">login</a> </p>
+    <p>You must <a href="/login">connect your Spotify account</a> </p>
 
     {% if error != None %}
     <p>Error: {{ error }}</p>
@@ -61,7 +61,7 @@
       {% endfor %}
     </div>
 
-    <p>You must <a href="/logout">logout</a> </p>
+    <p><a href="/logout">Logout</a> </p>
   </div>
   {% endif %}
 

@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import authenticate
 from django.contrib import messages
 import tekore as tk
 import ipinfo
@@ -13,6 +15,7 @@ from .apis.Spotify import Spotify
 from .apis.Weather import fetchWeather
 from .forms import CreateUserForm
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
 
 env = environ.Env()
 environ.Env.read_env()
@@ -62,8 +65,10 @@ def logout(request):
     response.delete_cookie('user_session')
     return response
 
-
+@login_required(login_url='/userLogin')
 def home(request):
+	return render(request, "base/home.html")
+"""
     # If user signed in
     try:
         token = request.COOKIES['user_session']
@@ -133,12 +138,37 @@ def home(request):
             "user": None,
             "error": e
         })
-
+"""    
+@login_required(login_url='/userLogin')
 def profile(request):
-    return render(request, "base/profile.html")
 
 
+    username = None
+    if(request.user.is_authenticated):
+    	username = request.user.username
+    if env("STAGE") == 'DEV':
+        ipAddress = '216.239.36.21' # Mountain View, CA
+    else:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ipAddress = x_forwarded_for.split(',')[0]
+        else:
+            ipAddress = request.META.get('REMOTE_ADDR')
+    location = geocoder.ipinfo(ipAddress)
+    address = location.city + ", " + location.state + ", " + location.country
+    context = {
+    		'username' : username,
+    		'address' : address
+    		}
+    
+    return render(request, "base/profile.html",context)
+
+@login_required(login_url='/userLogin')
 def playlists(request):
+	return render(request, "base/playlists.html")
+"""
+	return render(request, "base/playlists.html")
+
     # If user signed in
     try:
         token = request.COOKIES['user_session']
@@ -160,7 +190,8 @@ def playlists(request):
             "user": None,
             "tracks": None
         })
-
+"""
+@login_required(login_url='/userLogin')
 def location(request):
     # geolocation
     if env("STAGE") == 'DEV':
@@ -187,7 +218,7 @@ def location(request):
     context = {'m': m, }
     return render(request, 'base/location.html', context)
 
-
+@login_required(login_url='/userLogin')
 def friends(request):
     data = {
         'friends': [],
@@ -201,7 +232,7 @@ def about(request):
 
 def register(request):
 	if request.user.is_authenticated:
-		return redirect('home')
+		return redirect('/home')
 	else:
 		form = CreateUserForm()
 		if request.method == 'POST':
@@ -220,7 +251,7 @@ def register(request):
     
 def userLogin(request):
 	if request.user.is_authenticated:
-		return redirect('home')
+		return redirect('/home')
 	else:
 		if request.method == 'POST':
 			username = request.POST.get('username')
@@ -229,8 +260,8 @@ def userLogin(request):
 			user = authenticate(request, username=username, password=password)
 
 			if user is not None:
-				login(request, user)
-				return redirect('home')
+				auth_login(request, user)
+				return redirect('/home')
 			else:
 				messages.info(request, 'Username OR password is incorrect')
 
@@ -239,5 +270,5 @@ def userLogin(request):
 		
 		
 def userLogout(request):
-	logout(request)
-	return redirect('login')
+	auth_logout(request)
+	return redirect('/userLogin')

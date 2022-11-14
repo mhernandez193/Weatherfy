@@ -1,10 +1,11 @@
 from django.urls import path
 from . import views
-
+from django.contrib import admin
 
 app_name = "base"
 urlpatterns = [
     path("", views.home, name="home"),
+    path("admin", admin.site.urls),
     path("callback", views.callback, name="callback"),
     path("login", views.login, name="login"),
     path("logout", views.logout, name="logout"),

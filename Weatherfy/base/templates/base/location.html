@@ -2,22 +2,25 @@
 
 {% block content %}
 <title>Weatherfy | Location</title>
+
 <div class="w3-main" style="margin-left:340px;margin-right:40px">
 
   <!-- Header -->
-  <div class="w3-container" style="margin-top:80px" id="showcase">
-    <h1 class="w3-jumbo"><b>Your Location</b></h1>
-    <h1 class="w3-xxxlarge w3-text-red"><b>Current Weather: Rain</b></h1>
-    <hr style="width:50px;border:5px solid red" class="w3-round">
+	<div class="w3-container" style="margin-top:80px" id="showcase">
+	<h1 class="w3-jumbo"><b>Your Location</b></h1>
+	<h1 class="w3-xxxlarge w3-text-red"><b>Current Weather: Rain</b></h1>
+	<hr style="width:50px;border:5px solid red" class="w3-round">
     
-  </div>
+	</div>
 
 
-<div class="container">
-	<div class="row mt-4">
-		<div class="col-md-10 offset-md-1">
-			{{m|safe}}
+	<div class="container">
+		<div class="row mt-4">
+			<div class="col-md-10 offset-md-1">
+				{{m|safe}}
+			</div>
 		</div>
 	</div>
 </div>
+</br></br>
 {% endblock content %}
