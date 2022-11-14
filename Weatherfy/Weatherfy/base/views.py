@@ -100,7 +100,7 @@ def home(request):
 		with spotify.token_as(token):
 			playlist = spotify.search(
 				weather['weather'][0]['description'], ('playlist',))
-			playlistIndex = randint(0, playlist[0].limit-1)
+			playlistIndex = randint(0, playlist[0].total-1)
 			spotify.playback_start_context(
 				playlist[0].items[playlistIndex].uri)
 
@@ -137,90 +137,104 @@ def home(request):
 		})
 
 def skipForward(request):
-    print('skipForward')
-    try:
-        token = request.COOKIES['user_session']
+	print('skipForward')
+	try:
+		token = request.COOKIES['user_session']
 
-        with spotify.token_as(token):
-            spotify.playback_next()
-        
-        return HttpResponse(status=204)
-    except Exception as e:
-        print(e)
-        return render(request, "base/home.html", {
-            "user": None,
-            "error": e
-        })
+		with spotify.token_as(token):
+			spotify.playback_next()
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
+
+def playSong(request):
+	try:
+		token = request.COOKIES['user_session']
+		with spotify.token_as(token):
+			spotify.playback_start_context(f"spotify:playlist:{request.GET['playlistID']}", request.GET['trackID'])
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "home.html", {
+			"user": None,
+			"error": e
+		})
 
 def togglePlayPause(request):
-    print('togglePlayPause')
-    try:
-        token = request.COOKIES['user_session']
+	print('togglePlayPause')
+	try:
+		token = request.COOKIES['user_session']
 
-        with spotify.token_as(token):
-            if (spotify.playback_currently_playing().is_playing):
-                spotify.playback_pause()
-            else:
-                spotify.playback_resume()
-        
-        return HttpResponse(status=204)
-    except Exception as e:
-        print(e)
-        return render(request, "base/home.html", {
-            "user": None,
-            "error": e
-        })
+		with spotify.token_as(token):
+			if (spotify.playback_currently_playing().is_playing):
+				spotify.playback_pause()
+			else:
+				spotify.playback_resume()
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
 
 def toggleFavorite(request):
-    print('toggleFavorite')
-    try:
-        token = request.COOKIES['user_session']
-        trackId = request.POST['trackId']
-        print(trackId)
+	print('toggleFavorite')
+	try:
+		token = request.COOKIES['user_session']
 
-        with spotify.token_as(token):
-            # spotify.saved_tracks_add()
-            pass
-        
-        return HttpResponse(status=204)
-    except Exception as e:
-        print(e)
-        return render(request, "base/home.html", {
-            "user": None,
-            "error": e
-        })
+		with spotify.token_as(token):
+			song_id = spotify.playback_currently_playing().item.id
+			if song_id in [t.track.id for t in spotify.saved_tracks(limit=50).items]:
+				spotify.saved_tracks_delete([song_id])
+			else:
+				spotify.saved_tracks_add([song_id])
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
 
 def togglePlaylist(request):
-    print('togglePlaylist')
-    try:
-        token = request.COOKIES['user_session']
+	print('togglePlaylist')
+	try:
+		token = request.COOKIES['user_session']
 
-        with spotify.token_as(token):
-            spotify.playback_previous()
-        
-        return HttpResponse(status=204)
-    except Exception as e:
-        print(e)
-        return render(request, "base/home.html", {
-            "user": None,
-            "error": e
-        })
+		with spotify.token_as(token):
+			spotify.playback_previous()
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
 
 def skipBackward(request):
-    print('skipBackward')
-    try:
-        token = request.COOKIES['user_session']
+	print('skipBackward')
+	try:
+		token = request.COOKIES['user_session']
 
-        with spotify.token_as(token):
-            spotify.playback_previous()
-        
-        return HttpResponse(status=204)
-    except Exception as e:
-        print(e)
-        return render(request, "base/home.html", {
-            "user": None,
-            "error": e
-        })
+		with spotify.token_as(token):
+			spotify.playback_previous()
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
 
 def profile(request):
 	return render(request, "base/profile.html")
@@ -242,7 +256,7 @@ def playlists(request):
 			"playlists": [(p.id, p.name) for p in playlists.items],
 			"current_playlist_name": current_playlist.name, 
 			"current_playlist_id": current_playlist.id,
-			"tracks": [(t.track.href, t.track.name) for t in current_playlist.tracks.items]
+			"tracks": [(t.track.id, t.track.name) for t in current_playlist.tracks.items]
 		}
 
 		return render(request, "base/playlists.html", data)

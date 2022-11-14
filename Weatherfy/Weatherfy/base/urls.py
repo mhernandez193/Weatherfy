@@ -20,6 +20,7 @@ urlpatterns = [
 	
     path('togglePlayPause/', views.togglePlayPause, name='togglePlayPause'),
     path('skipForward/', views.skipForward, name='skipForward'),
+    path('playSong/', views.playSong, name='playSong'),
     path('skipBackward/', views.skipBackward, name='skipBackward'),
     path('toggleFavorite/', views.toggleFavorite, name='toggleFavorite'),
 ]

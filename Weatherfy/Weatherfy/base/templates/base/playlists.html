@@ -8,7 +8,10 @@
 {% else %}
 
 <script>
-	function onPlaylistSelect(playlist_id, auth)
+	var auth = document.cookie.substring(13, document.cookie.indexOf(";"));
+	var is_playing = false;
+
+	function onPlaylistSelect(playlist_id)
 	{
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.open( "GET", "https://api.spotify.com/v1/playlists/"+playlist_id+"/tracks", false ); // false for synchronous request
@@ -16,21 +19,55 @@
 		xmlHttp.send( null );
 		var tracks = JSON.parse(xmlHttp.responseText).items;
 		var table = document.getElementById("shown_playlist");
-		console.log(table)
 		table.innerHTML = "";
 		for (var i = 0; i < tracks.length; ++i)
 		{
-			table.innerHTML += '<tr><th scope="row">'+(i+1)+'</th><th style="text-align: center;"><a href="'+tracks[i].track.href+'}">'+tracks[i].track.name+'</a></th></tr>';
+			table.innerHTML += '<tr><th scope="row">'+(i+1)+'</th><th style="text-align: center;"><form action="playSong" method="GET"><input type="hidden" name="trackID" value="'
+								+tracks[i].track.id+'" /><input type="hidden" name="playlistID" value="'+playlist_id+'" /><button class="track-button" type="submit" type="submit">'+tracks[i].track.name+'</button></form></th></tr>';
 		}
 	}
+
+	window.setInterval(function()
+	{
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open( "GET", "https://api.spotify.com/v1/me/player", false ); // false for synchronous request
+		xmlHttp.setRequestHeader("Authorization", "Bearer " + auth)
+		xmlHttp.send( null );
+		if(is_playing != JSON.parse(xmlHttp.responseText).is_playing)
+		{
+			var player_play_pause_button = document.getElementById("player_pause_stop");
+			is_playing = !is_playing;
+			if(is_playing)
+			{
+				player_play_pause_button.innerHTML = '<i class="fa fa-pause fa-2x"></i>';
+			}
+			else
+			{
+				player_play_pause_button.innerHTML = '<i class="fa fa-play fa-2x"></i>';
+			}
+		}
+	}, 200);
 </script>
 
-<div class="jumbotron jumbotron-fluid">
-	<div class="container">
-		<h3 class="display-4" style="font-weight: 700;color: darkblue;text-align: center;font-size: xxx-large;margin-bottom: 20px;">My Playlist</h3>
+<style>
+	.track-button
+	{
+		background-color: rgb(118, 239, 255);
+		border-radius: 10px;
+		border-width: 1px;
+	}
+	.track-button:hover
+	{
+		background-color: #2BAE66FF;
+	}
+</style>
 
-		<table style="margin: auto;width:50%;table-layout: fixed;width: 370px;background-color: rgb(76, 175, 80);border-radius: 20px;height: 50px;margin-bottom: 20px;margin-top: 20px;">
-			<tr>
+<div class="jumbotron jumbotron-fluid" style="left:15%;right:0;position: absolute;">
+	<div class="container">
+		<h3 class="display-4" style="text-align: center;font-family: Arial, Helvetica, sans-serif;font-weight: 800;font-size: xxx-large;margin-bottom: 20px;color: rgb(211, 0, 0);">My Playlist</h3>
+
+		<table style="margin: auto;width:50%;table-layout: fixed;width: 370px;background-color: #2BAE66FF;border-radius: 20px;height: 50px;margin-bottom: 20px;margin-top: 20px;">
+			<tr class="track-player" >
 				<td style="text-align: center;" class="previoustrack">
 					<form action='skipBackward' method='GET'>
 						<button type="submit" style="border-radius: 30px;">
@@ -40,9 +77,8 @@
 				</td>
 				<td style="text-align: center;">
 					<form action='togglePlayPause' method='GET'>
-						<button type="submit" style="border-radius: 30px;width: 100px;">
+						<button type="submit" style="border-radius: 30px;width: 100px;" id="player_pause_stop">
 							<i class="fa fa-play fa-2x"></i>
-							<i class="fa fa-pause fa-2x"></i>
 						</button>
 					</form>
 				</td>
@@ -54,7 +90,8 @@
 					</form>
 				</td>
 				<td style="text-align: center;width: 50px;padding-right: 70px;">
-					<form action='toggleFavorite' method='POST'>
+					<form action='toggleFavorite/' method='POST'>
+						{% csrf_token %}
 						<button type="submit" style="border-radius: 30px;">
 							<i class="fa fa-star fa-2x"></i>
 						</button>
@@ -62,26 +99,32 @@
 				</td>
 			</tr>
 		</table>
-		<select class="selectpicker dropdown-menu-center" data-style="btn-danger" onchange="onPlaylistSelect(this.value, '{{request.COOKIES.user_session}}')" style="margin: auto;width:22%;text-align: center;display: block;">
+		<select class="selectpicker dropdown-menu-center" data-style="btn-danger" onchange="onPlaylistSelect(this.value)" style="font-size: large;margin: auto;width:40%;text-align: center;display: block;border-radius: 20px;">
 			<option value={{current_playlist_id}}>{{ current_playlist_name }}</option>
 			{% for id, name in playlists %}
 				<option value={{id}}>{{ name }}</option>
 			{% endfor %}
 		</select>
 
+		<hr/>
+
 		<table class="table table-striped" style="width: 70%;margin: auto;margin-top: 20px;">
 			<thead>
 				<tr>
-					<th scope="col">#</th>
-					<th scope="col" style="text-align: center;">Song</th>
+					<th scope="col" style="font-size: x-large;color: rgb(211, 0, 0);">#</th>
+					<th scope="col" style="text-align: center;font-size: x-large;color: rgb(211, 0, 0);">Track(s)</th>
 				</tr>
 			</thead>
 			<tbody id="shown_playlist">
-				{% for href, name in tracks %}
+				{% for trackID, name in tracks %}
 				<tr>
 					<th scope="row">{{ forloop.counter }}</th>
 					<th style="text-align: center;">
-						<a href="{{href}}">{{ name }}</a>
+						<form action='playSong' method='GET'>
+							<input type="hidden" name="trackID" value="{{trackID}}" />
+							<input type="hidden" name="playlistID" value="{{current_playlist_id}}" />
+							<button class="track-button" type="submit" type="submit">{{ name }}</button>
+						</form>
 					</th>
 				</tr>
 				{% endfor %}
