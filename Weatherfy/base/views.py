@@ -67,6 +67,8 @@ def logout(request):
 
 @login_required(login_url='/userLogin')
 def home(request):
+	return render(request, "base/home.html")
+"""
     # If user signed in
     try:
         token = request.COOKIES['user_session']
@@ -136,12 +138,37 @@ def home(request):
             "user": None,
             "error": e
         })
+"""    
 @login_required(login_url='/userLogin')
 def profile(request):
-    return render(request, "base/profile.html")
+
+
+    username = None
+    if(request.user.is_authenticated):
+    	username = request.user.username
+    if env("STAGE") == 'DEV':
+        ipAddress = '216.239.36.21' # Mountain View, CA
+    else:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ipAddress = x_forwarded_for.split(',')[0]
+        else:
+            ipAddress = request.META.get('REMOTE_ADDR')
+    location = geocoder.ipinfo(ipAddress)
+    address = location.city + ", " + location.state + ", " + location.country
+    context = {
+    		'username' : username,
+    		'address' : address
+    		}
+    
+    return render(request, "base/profile.html",context)
 
 @login_required(login_url='/userLogin')
 def playlists(request):
+	return render(request, "base/playlists.html")
+"""
+	return render(request, "base/playlists.html")
+
     # If user signed in
     try:
         token = request.COOKIES['user_session']
@@ -163,6 +190,7 @@ def playlists(request):
             "user": None,
             "tracks": None
         })
+"""
 @login_required(login_url='/userLogin')
 def location(request):
     # geolocation
