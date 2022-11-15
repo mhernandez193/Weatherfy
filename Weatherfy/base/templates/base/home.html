@@ -8,13 +8,12 @@
 <div class="w3-main" style="margin-left:340px;margin-right:40px">
 
   <!-- Header -->
-  {% if user == None %}
     <p>You must <a href="/login">connect your Spotify account</a> </p>
 
     {% if error != None %}
     <p>Error: {{ error }}</p>
     {% endif %}
-  {% else %}
+
   <div class="w3-container" style="margin-top:80px" id="showcase">
     <h1 class="w3-jumbo"><b>Your Daily Playlist</b></h1>
     <h1 class="w3-xxxlarge w3-text-red"><b>Current Weather: {{ weather.temperature }}</b></h1>
@@ -63,7 +62,6 @@
 
     <p><a href="/logout">Logout</a> </p>
   </div>
-  {% endif %}
 
 </div>
 

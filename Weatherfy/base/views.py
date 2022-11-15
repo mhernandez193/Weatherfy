@@ -169,32 +169,133 @@ def profile(request):
 
 @login_required(login_url='/userLogin')
 def playlists(request):
-	return render(request, "base/playlists.html")
-"""
-	return render(request, "base/playlists.html")
+	# If user signed in
+	try:
+		token = request.COOKIES['user_session']
 
-    # If user signed in
-    try:
-        token = request.COOKIES['user_session']
+		# Fetch Spotify playlist using weather
+		with spotify.token_as(token):
+			current_playlist_id = spotify.playback().context.uri
+			current_playlist = spotify.playlist(current_playlist_id[current_playlist_id.rfind(":")+1:])
+			playlists = spotify.playlists(spotify.current_user().id)
+		
+		data = {
+			"user": token,
+			"playlists": [(p.id, p.name) for p in playlists.items],
+			"current_playlist_name": current_playlist.name, 
+			"current_playlist_id": current_playlist.id,
+			"tracks": [(t.track.id, t.track.name) for t in current_playlist.tracks.items]
+		}
 
-        # Fetch Spotify playlist using weather
-        with spotify.token_as(token):
-            tracks = spotify.current_user_top_tracks()
-        
-        data = {
-            "user": token,
-            "tracks": tracks.items
-        }
+		return render(request, "base/playlists.html", data)
 
-        return render(request, "base/playlists.html", data)
+	# If user not signed in
+	except Exception as ex:
+		print(ex)
+		return render(request, "base/playlists.html", {
+			"user": None,
+			"tracks": None
+		})
+		
+def skipForward(request):
+	print('skipForward')
+	try:
+		token = request.COOKIES['user_session']
 
-    # If user not signed in
-    except:
-        return render(request, "base/playlists.html", {
-            "user": None,
-            "tracks": None
-        })
-"""
+		with spotify.token_as(token):
+			spotify.playback_next()
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
+
+def playSong(request):
+	try:
+		token = request.COOKIES['user_session']
+		with spotify.token_as(token):
+			spotify.playback_start_context(f"spotify:playlist:{request.GET['playlistID']}", request.GET['trackID'])
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "home.html", {
+			"user": None,
+			"error": e
+		})
+
+def togglePlayPause(request):
+	print('togglePlayPause')
+	try:
+		token = request.COOKIES['user_session']
+
+		with spotify.token_as(token):
+			if (spotify.playback_currently_playing().is_playing):
+				spotify.playback_pause()
+			else:
+				spotify.playback_resume()
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
+
+def toggleFavorite(request):
+	print('toggleFavorite')
+	try:
+		token = request.COOKIES['user_session']
+
+		with spotify.token_as(token):
+			song_id = spotify.playback_currently_playing().item.id
+			if song_id in [t.track.id for t in spotify.saved_tracks(limit=50).items]:
+				spotify.saved_tracks_delete([song_id])
+			else:
+				spotify.saved_tracks_add([song_id])
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
+
+def togglePlaylist(request):
+	print('togglePlaylist')
+	try:
+		token = request.COOKIES['user_session']
+
+		with spotify.token_as(token):
+			spotify.playback_previous()
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
+
+def skipBackward(request):
+	print('skipBackward')
+	try:
+		token = request.COOKIES['user_session']
+
+		with spotify.token_as(token):
+			spotify.playback_previous()
+		
+		return HttpResponse(status=204)
+	except Exception as e:
+		print(e)
+		return render(request, "base/home.html", {
+			"user": None,
+			"error": e
+		})
 @login_required(login_url='/userLogin')
 def location(request):
     # geolocation
@@ -291,4 +392,4 @@ class PasswordChange(PasswordChangeView):
 	form_class = PasswordChangeForm
 	template_name = 'base/changepass.html'
 	success_url = '/home'
-	
+

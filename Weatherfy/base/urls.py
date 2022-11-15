@@ -21,5 +21,10 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("editprofile", EditProfile.as_view(), name="editprofile"),
     path("password/", PasswordChange.as_view(template_name='base/changepass.html')),
+    path('togglePlayPause/', views.togglePlayPause, name='togglePlayPause'),
+    path('skipForward/', views.skipForward, name='skipForward'),
+    path('playSong/', views.playSong, name='playSong'),
+    path('skipBackward/', views.skipBackward, name='skipBackward'),
+    path('toggleFavorite/', views.toggleFavorite, name='toggleFavorite'),
 ]
 
