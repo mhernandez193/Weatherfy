@@ -1,7 +1,8 @@
 from django.urls import path
 from . import views
 from django.contrib import admin
-
+from django.contrib.auth import views as auth_views
+from .views import PasswordChange, EditProfile
 app_name = "base"
 urlpatterns = [
     path("", views.home, name="home"),
@@ -18,4 +19,7 @@ urlpatterns = [
     path("userLogin", views.userLogin, name="userLogin"),
     path("userLogout", views.userLogout, name="userLogout"),
     path("register", views.register, name="register"),
+    path("editprofile", EditProfile.as_view(), name="editprofile"),
+    path("password/", PasswordChange.as_view(template_name='base/changepass.html')),
 ]
+

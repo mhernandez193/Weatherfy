@@ -2,20 +2,27 @@
 {% load static %}
 {% block content %}
 <title>Weatherfy | Profile</title>
-
-<div class="card">
-	{% if user.profile.spotifyLink %}
-		<img src="{{ user.profile.profile_image.url }}" class="center" width=200 height=200>
-	{% else %}
-		<img src="{% static 'base/images/default-user.png' %}" class="center" width=200 height=200>
+<div class="d-flex justify-content-center mt-3">
+	<div class="card">
+		{% if user.profile.spotifyLink %}
+			<img src="{{ user.profile.profile_image.url }}" class="center" width=200 height=200>
+		{% else %}
+			<img src="{% static 'base/images/default-user.png' %}" class="center" width=200 height=200>
+			{% endif %}
+		<h2>{{username|safe}}</h2>
+		<p class="title">{{address|safe}}</p>
+		{% if user.profile.spotifyLink %}
+			<a href = "{{ user.profile.spotifyLink }}">Spotify</a>
+		{% else %}
+		Spotify Not Connected
 		{% endif %}
-	<h2>{{username|safe}}</h2>
-	<p class="title">{{address|safe}}</p>
-	{% if user.profile.spotifyLink %}
-		<a href = "{{ user.profile.spotifyLink }}">Spotify</a>
-	{% else %}
-	Spotify Not Connected
-	{% endif %}
+		<div class="d-flex justify-content-center">
+			<a href="{% url 'base:editprofile' %}" class="button">Edit Profile</a>
+		</div>
+	</div>
+	</br></br>
+	
 </div>
+
 
 {% endblock content %}

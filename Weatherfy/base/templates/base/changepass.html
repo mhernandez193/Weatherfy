@@ -1,0 +1,14 @@
+{% extends 'base/main.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-center mt-3 login_container">
+	<h1>Change Password</h1>
+	</br></br>
+	<div class="form">
+		<form method="POST">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<button class="btn btn-secondary">Update Password</button>
+	</div>
+</div>
+{% endblock content %}

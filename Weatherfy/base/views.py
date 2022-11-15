@@ -3,6 +3,8 @@ from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
 from django.contrib import messages
+from django.views import generic
+from django.views.generic import DetailView, CreateView
 import tekore as tk
 import ipinfo
 import environ
@@ -11,12 +13,14 @@ from random import randint
 from django.http import HttpResponse
 import folium
 import geocoder
+from django.urls import reverse_lazy
 from .apis.Spotify import Spotify
 from .apis.Weather import fetchWeather
-from .forms import CreateUserForm
-from django.contrib.auth.forms import UserCreationForm
+from .forms import CreateUserForm, EditProfileForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.views import PasswordChangeView
+from base.models import Profile
 env = environ.Env()
 environ.Env.read_env()
 
@@ -65,7 +69,7 @@ def logout(request):
     response.delete_cookie('user_session')
     return response
 
-@login_required(login_url='/userLogin')
+#@login_required(login_url='/userLogin')
 def home(request):
 	return render(request, "base/home.html")
 """
@@ -272,3 +276,19 @@ def userLogin(request):
 def userLogout(request):
 	auth_logout(request)
 	return redirect('/userLogin')
+	
+
+class EditProfile(generic.UpdateView):
+	form_class = EditProfileForm
+	template_name = 'base/editprofile.html'
+	success_url = '/home'
+	
+	def get_object(self):
+		return self.request.user
+
+	
+class PasswordChange(PasswordChangeView):
+	form_class = PasswordChangeForm
+	template_name = 'base/changepass.html'
+	success_url = '/home'
+	
